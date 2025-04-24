@@ -8,8 +8,9 @@
         <xpath expr="//page[@name='information']//group[@name='salary_info']" position="inside">
             <group string="Salary Breakdown" col="2">
                 <field name="basic_salary"/>
-                <field name="home_rent"/>
-                <field name="allowance"/>
+                <field name="hra"/>
+                <field name="transport"/>
+                <field name="fuel"/>
             </group>
         </xpath>
     </field>

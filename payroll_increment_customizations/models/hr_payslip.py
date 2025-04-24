@@ -4,13 +4,18 @@ from odoo import models, fields, api
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
-    increment_amount = fields.Float(string="Increment Amount", readonly=True)
+    increment_amount = fields.Float('Increment Amount')
+    # increment_amount_basic = fields.Float(string="Increment Amount B", readonly=True)
+    # increment_amount_hra = fields.Float(string="Increment Amount H", readonly=True)
+    # increment_amount_transport = fields.Float(string="Increment Amount T", readonly=True)
+    # increment_amount_fuel = fields.Float(string="Increment Amount F", readonly=True)
+
     bp_qty = fields.Float('BP Qty', readonly=True)
 
     def _compute_updated_basic_salary(self):
         for slip in self:
             contract = slip.contract_id
-            basic_salary = contract.basic_salary  # Assuming this field exists on the contract
+            contract_amount = {'basic': contract.basic_salary, 'hra': contract.hra, 'transport': contract.transport, 'fuel': contract.fuel}
 
             if slip.struct_id:
                 increment = self.env['hr.yearly.increment'].search([
@@ -20,33 +25,50 @@ class HrPayslip(models.Model):
                 ], limit=1)
 
                 if increment:
-                    # Calculate the increment on basic salary
-                    increment_amt = basic_salary * increment.increment_percentage / 100.0
-                    new_basic_salary = basic_salary + increment_amt
+                    components = {
 
-                    # Store the increment amount in the payslip
-                    slip.increment_amount = increment_amt
+                        'basic': increment.basic_increment,
+                        'hra': increment.hra_increment,
+                        'transport': increment.transport_increment,
+                        'fuel': increment.fuel_increment,
+                    }
+                    for component in increment.increment_component_ids:
 
-                    # Apply the increment temporarily to contract
-                    contract.basic_salary = new_basic_salary
-                    contract.wage = new_basic_salary + contract.home_rent + contract.allowance
+                        # Calculate the increment on basic salary
+                        increment_amt = contract_amount[component.code] * components[component.code]  / 100.0
+                        new_amount = contract_amount[component.code] + increment_amt
 
-                    # Find the BP salary rule and set its amount to 500
-                    bp_rule = self.env['hr.salary.rule'].search([
-                        ('code', '=', 'BP'),
-                        ('struct_id', '=', slip.struct_id.id)
-                    ], limit=1)
+                        # Store the increment amount in the payslip
+                        slip.increment_amount = increment_amt
 
-                    if bp_rule:
-                        if increment.back_p > 0:
-                            bp_rule.write({
-                                'amount_fix': increment_amt,  # Set the amount to a fixed value (500)
-                            })
-                            increment.back_p = 0
+                        # Apply the increment temporarily to contract
+                        if component.code == 'basic':
+                            contract.basic_salary = new_amount
+                        elif component.code == 'hra':
+                            contract.hra = new_amount
+                        elif component.code == 'transport':
+                            contract.transport = new_amount
                         else:
-                            bp_rule.quantity = 0
-                            bp_rule.amount_fix = 0
+                            contract.fuel = new_amount
 
+                        contract.wage = contract.basic_salary + contract.hra + contract.transport + contract.fuel
+
+                        # Find the BP salary rule and set its amount to 500
+                        bp_rule = self.env['hr.salary.rule'].search([
+                            ('code', '=', f'BP_{component.code}'),
+                            ('struct_id', '=', slip.struct_id.id)
+                        ], limit=1)
+
+                        if bp_rule:
+                            if increment.back_p > 0:
+                                bp_rule.write({
+                                    'amount_fix': increment_amt,  # Set the amount to a fixed value (500)
+                                })
+
+                            else:
+                                bp_rule.quantity = 0
+                                bp_rule.amount_fix = 0
+                    increment.back_p = 0
 
     def compute_sheet(self):
         for slip in self:
@@ -58,7 +80,7 @@ class HrPayslip(models.Model):
                 original_wage = contract.wage
                 try:
                     # Set contract wage to the updated wage based on basic salary
-                    contract.wage = contract.basic_salary + contract.home_rent + contract.allowance
+                    contract.wage = contract.basic_salary + contract.hra + contract.transport + contract.fuel
                     super(HrPayslip, slip).compute_sheet()
                 finally:
                     # Restore original wage to avoid any permanent change

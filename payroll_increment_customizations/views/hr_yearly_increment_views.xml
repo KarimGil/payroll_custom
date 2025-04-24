@@ -22,34 +22,48 @@
                 <field name="name"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
-                <field name="increment_percentage"/>
             </list>
         </field>
     </record>
 
     <!-- Form View -->
-<record id="view_hr_yearly_increment_form" model="ir.ui.view">
-    <field name="name">hr.yearly.increment.form</field>
-    <field name="model">hr.yearly.increment</field>
-    <field name="arch" type="xml">
-        <form string="Yearly Increment">
-            <header>
-                <button name="action_confirm_increment" type="object"
-                        string="Confirm" class="btn-primary"
-                        invisible="state == 'confirmed'"/>
-                <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
-            </header>
-            <sheet>
-                <group>
-                    <field name="name"/>
-                    <field name="start_date"/>
-                    <field name="end_date"/>
-                    <field name="increment_percentage"/>
-                    <field name="structure_ids" widget="many2many_tags"/>
-                    <field name="back_p"/>
-                </group>
-            </sheet>
-        </form>
-    </field>
-</record>
+    <record id="view_hr_yearly_increment_form" model="ir.ui.view">
+        <field name="name">hr.yearly.increment.form</field>
+        <field name="model">hr.yearly.increment</field>
+        <field name="arch" type="xml">
+            <form string="Yearly Increment">
+                <header>
+                    <button name="action_confirm_increment" type="object"
+                            string="Confirm" class="btn-primary"
+                            invisible="state == 'confirmed'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="increment_component_ids" widget="many2many_tags" options="{'no_create': True}"/>
+
+                        <field name="basic_selected"
+                               invisible="1"/>
+                        <field name="hra_selected"
+                               invisible="1"/>
+                        <field name="transport_selected"
+                               invisible="1"/>
+                        <field name="fuel_selected"
+                               invisible="1"/>
+
+                        <field name="basic_increment" invisible="basic_selected == False"/>
+                        <field name="hra_increment" invisible="hra_selected == False"/>
+                        <field name="transport_increment" invisible="transport_selected == False"/>
+                        <field name="fuel_increment" invisible="fuel_selected == False"/>
+
+                        <field name="structure_ids" widget="many2many_tags"/>
+                        <field name="back_p"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
 </odoo>

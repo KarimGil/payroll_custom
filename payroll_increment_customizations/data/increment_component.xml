@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <odoo>
+        <data noupdate="1">
+            <record id="increment_basic" model="hr.increment.component">
+                <field name="name">Basic Salary</field>
+                <field name="code">basic</field>
+            </record>
+
+            <record id="increment_hra" model="hr.increment.component">
+                <field name="name">House Rent Allowance</field>
+                <field name="code">hra</field>
+            </record>
+
+            <record id="increment_transport" model="hr.increment.component">
+                <field name="name">Transportation Allowance</field>
+                <field name="code">transport</field>
+            </record>
+
+            <record id="increment_fuel" model="hr.increment.component">
+                <field name="name">Fuel Allowance</field>
+                <field name="code">fuel</field>
+            </record>
+        </data>
+    </odoo>
+
+</odoo>

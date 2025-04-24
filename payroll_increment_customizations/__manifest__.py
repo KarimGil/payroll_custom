@@ -10,6 +10,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/hr_yearly_increment_views.xml',
+        'data/increment_component.xml',
         # 'views/hr_payslip.xml',
         'views/hr_contract_views.xml',
     ],
